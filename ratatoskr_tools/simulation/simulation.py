@@ -50,7 +50,7 @@ def remove_all_simdirs(basedir, restarts):
         os.system(cmd)
 
 
-def run_single_sim(simulator, config_path, network_path, output_dir="."):
+def run_single_sim(simulator, config_path, network_path, output_dir=".", stdout=subprocess.DEVNULL, **kwargs):
     """
     Run the simulation once according to the given config_path and network_path.
     Then, the result of the simulation is outputted to the output_dir.
@@ -65,17 +65,32 @@ def run_single_sim(simulator, config_path, network_path, output_dir="."):
         The path of input "network.xml" file for the simulator.
     output_dir : str, optional
         The directory of the simulation result which is stored, by default "."
+    stdout : [type]
+        It accept all the possible argument option "stdout" in the function subprocess.run().
+        If it is a string type value, then the output of the program is written to the file
+        "output_dir/stdout", by default subprocess.DEVNULL
     """
+    os.environ['SYSTEMC_DISABLE_COPYRIGHT_MESSAGE'] = "1"
 
-    outfile = open(output_dir + "/log", "w")
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+
+    if type(stdout) is str:
+        if not os.path.isdir(os.path.dirname(stdout)):
+            os.makedirs(os.path.dirname(stdout))
+        stdout = open(stdout, "w")
 
     config_path = "--configPath=" + config_path
     network_path = "--networkPath=" + network_path
     output_dir = "--outputDir=" + output_dir
 
-    args = (simulator, config_path, network_path, output_dir)
+    args = [simulator, config_path, network_path, output_dir]
+
+    for key, val in kwargs.items():
+        args.append("--{}={}".format(key, val))
+
     try:
-        subprocess.run(args, stdout=outfile, check=True)
+        subprocess.run(args, stdout=stdout, check=True)
     except subprocess.CalledProcessError:
         print("ERROR:", args)
 

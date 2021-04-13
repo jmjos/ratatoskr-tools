@@ -304,6 +304,33 @@ class NetworkWriter(Writer):
     def write_header(self):
         bufferDepthType_node = ET.SubElement(self.root_node, 'bufferDepthType')
         bufferDepthType_node.set('value', self.config.bufferDepthType)
+        topology_node = ET.SubElement(self.root_node, 'topology')
+        topology_node.text = self.config.topology
+        abstract_node = ET.SubElement(self.root_node, 'abstract')
+        z_node =  ET.SubElement(abstract_node, 'z')
+        z_node.set('value', str(self.config.z))
+        z_step_node = ET.SubElement(z_node, 'zStep')
+        z_step_node.set('value', str(self.z_step))
+        z_range_node = ET.SubElement(z_node, 'zRange')
+        z_range_node.text = " ".join([str(var) for var in self.z_range])
+        y_node = ET.SubElement(abstract_node, 'y')
+        y_node.set('value', " ".join([str(var) for var in self.config.y]))
+        for i in range(self.config.z):
+            layer_node = ET.SubElement(y_node, 'layer')
+            layer_node.set('value', str(i))
+            y_step_node = ET.SubElement(layer_node, 'yStep')
+            y_step_node.set('value', str(self.y_step[i]))
+            y_range_node = ET.SubElement(layer_node, 'yRange')
+            y_range_node.text = " ".join([str(var) for var in self.y_range[i]])
+        x_node = ET.SubElement(abstract_node, 'x')
+        x_node.set('value', " ".join([str(var) for var in self.config.x]))
+        for i in range(self.config.z):
+            layer_node = ET.SubElement(x_node, 'layer')
+            layer_node.set('value', str(i))
+            x_step_node = ET.SubElement(layer_node, 'xStep')
+            x_step_node.set('value', str(self.x_step[i]))
+            x_range_node = ET.SubElement(layer_node, 'xRange')
+            x_range_node.text = " ".join([str(var) for var in self.x_range[i]])
 
     def write_layers(self):
         layers_node = ET.SubElement(self.root_node, 'layers')
@@ -600,9 +627,7 @@ class ConfigWriter(Writer):
     def write_noc(self):
         noc_node = ET.SubElement(self.root_node, 'noc')
         nocFile_node = ET.SubElement(noc_node, 'nocFile')
-        noc_topology = ET.SubElement(noc_node, 'topology')
         nocFile_node.text = 'config/network.xml'
-        noc_topology.text = self.config.topology
         flitsPerPacket_node = ET.SubElement(noc_node, 'flitsPerPacket')
         flitsPerPacket_node.set('value', str(self.config.flitsPerPacket))
         bitWidth_node = ET.SubElement(noc_node, 'bitWidth')
